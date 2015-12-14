@@ -14,17 +14,54 @@ class App extends Component {
     .then(res => res.json())
     .then(json => {
       let images = json.data.map(image => {
-        return image.images.fixed_height.url;
-      })
-      this.setState({ images })
+        let id = image.id;
+        let url = image.images.fixed_height.url;
+        return { id, url }
+      });
+
+      return new Promise((resolve, reject) => {
+        let promises = [];
+
+        images.forEach(image => {
+          promises.push(this.getImageScore(image.id));
+        });
+
+        Promise.all(promises)
+        .then(scores => {
+          scores.forEach(score => {
+            images.forEach(image => {
+              if (image.id == score.id) {
+                image.score = score.score;
+              }
+            });
+          });
+          resolve(images);
+        });
+      });
+    })
+    .then(images => {
+      console.log(images);
+      this.setState({ images });
+    })
+  }
+
+  getImageScore(id) {
+    return new Promise((resolve, reject) => {
+      // TODO: Don't hard code this
+      fetch(`http://localhost:3000/api/score?id=${id}`)
+        .then(res => res.json())
+        .then(json => {
+          resolve(json);
+        })
+        .catch(err => reject(err));
     });
   }
 
   render() {
 
     let images = this.state.images.map((image, index) => {
-      return <Image image={image} key={index}/>;
-    })
+      return <Image {...image} key={index}/>;
+    });
 
     return (
       <div>
