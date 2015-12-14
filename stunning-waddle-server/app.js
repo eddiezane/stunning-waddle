@@ -6,7 +6,7 @@ const app = express();
 
 /*
  * {
- *   "gifId (ahgsakhga)": score (0)
+ *   "ahgsakhga": 0
  * }
  */
 
@@ -39,7 +39,7 @@ app.post('/api/upvote', (req, res) => {
     db[id] = 1;
   }
 
-  res.send(db);
+  res.send({ id, score: db[id] });
 })
 
 app.post('/api/downvote', (req, res) => {
@@ -51,7 +51,7 @@ app.post('/api/downvote', (req, res) => {
     db[id] = -1;
   }
 
-  res.send(db);
+  res.send({ id, score: db[id] });
 })
 
 app.listen(3000);

@@ -1,34 +1,43 @@
 import React, { Component } from 'react';
 
-function vote(type, id) {
-  let method = undefined;
+export default class Image extends Component {
+  vote = (type, id) => {
+    let handleUpdateScore = this.props.handleUpdateScore;
+    let method = undefined;
 
-  if (type === 'INC') {
-    method = 'upvote';
-  } else if (type === 'DEC') {
-    method = 'downvote';
+    if (type === 'INC') {
+      method = 'upvote';
+    } else if (type === 'DEC') {
+      method = 'downvote';
+    }
+
+    // TODO: Don't hardcode this
+    // fetch('http://localhost:3000/api/' + method, {
+    fetch(`http://ez-api.ngrok.io/api/${method}`, {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(id)
+    })
+    .then(res => res.json())
+    .then(json => {
+      console.log(json)
+      handleUpdateScore(json);
+    });
   }
 
-  // TODO: Don't hardcode this
-  fetch('http://localhost:3000/api/' + method, {
-    method: 'POST',
-    headers: {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(id)
-  })
-  .then(res => res.json())
-  .then(json => console.log(json));
-}
+  render() {
+    let { id, url, score } = this.props;
 
-export default ({ id, url, score }) => {
-  return (
-    <div>
-      <p>Score: {score ? score : 0}</p>
-      <button onClick={() => vote('INC', {id})}>+</button>
-      <button onClick={() => vote('DEC', {id})}>-</button>
-      <img src={url} />
-    </div>
-  );
+    return (
+      <div>
+        <p>Score: {score ? score : 0}</p>
+        <button onClick={() => this.vote('INC', {id})}>+</button>
+        <button onClick={() => this.vote('DEC', {id})}>-</button>
+        <img src={url} />
+      </div>
+    );
+  }
 }

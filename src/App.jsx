@@ -40,7 +40,6 @@ class App extends Component {
       });
     })
     .then(images => {
-      console.log(images);
       this.setState({ images });
     })
   }
@@ -48,7 +47,8 @@ class App extends Component {
   getImageScore(id) {
     return new Promise((resolve, reject) => {
       // TODO: Don't hard code this
-      fetch(`http://localhost:3000/api/score?id=${id}`)
+      // fetch(`http://localhost:3000/api/score?id=${id}`)
+      fetch(`http://ez-api.ngrok.io/api/score?id=${id}`)
         .then(res => res.json())
         .then(json => {
           resolve(json);
@@ -57,16 +57,34 @@ class App extends Component {
     });
   }
 
-  render() {
+  handleUpdateScore = ({id, score}) => {
+    let images = this.state.images.map(image => {
+      if (image.id == id) {
+        return {...image, score};
+      } else {
+        return image;
+      }
+    });
 
-    let images = this.state.images.map((image, index) => {
-      return <Image {...image} key={index}/>;
+    this.setState({ images });
+  }
+
+  render() {
+    
+    let images = this.state.images;
+
+    images = images.sort((a, b) => {
+      return b.score - a.score;
+    })
+
+    let sortedImages = images.map((image, index) => {
+      return <Image {...image} key={index} handleUpdateScore={this.handleUpdateScore} />;
     });
 
     return (
       <div>
         <h1>Stunning Waddle!</h1>
-        {images}
+        {sortedImages}
       </div>
     );
   }
