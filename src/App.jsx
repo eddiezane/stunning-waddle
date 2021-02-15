@@ -13,35 +13,23 @@ class App extends Component {
     fetch('http://api.giphy.com/v1/gifs/search?api_key=dc6zaTOxFJmzC&q=penguins')
     .then(res => res.json())
     .then(json => {
-      let images = json.data.map(image => {
+      let images = {};
+      json.data.map(image => {
         let id = image.id;
         let url = image.images.fixed_height.url;
-        return { id, url }
+        images[id] = {id, url};
       });
 
-      return new Promise((resolve, reject) => {
-        let promises = [];
-
-        images.forEach(image => {
-          promises.push(this.getImageScore(image.id));
+      return Promise.all(Object.keys(images).map(imageId => {
+        return this.getImageScore(imageId).then(scoreJson => {
+          images[imageId].score = scoreJson.score;
         });
-
-        Promise.all(promises)
-        .then(scores => {
-          scores.forEach(score => {
-            images.forEach(image => {
-              if (image.id == score.id) {
-                image.score = score.score;
-              }
-            });
-          });
-          resolve(images);
-        });
-      });
+      }))
+      .then(() => Object.keys(images).map(id => images[id]));
     })
     .then(images => {
       this.setState({ images });
-    })
+    });
   }
 
   getImageScore(id) {
